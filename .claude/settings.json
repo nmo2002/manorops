@@ -24,7 +24,9 @@
       "PowerShell(netstat -ano)",
       "Bash(node -e \"const p = require\\('./node_modules/date-fns/package.json'\\); console.log\\(p.version\\)\")",
       "Bash(node -e \"require\\('@vercel/blob'\\)\")",
-      "Bash(git commit -m ' *)"
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(git add *)"
     ],
     "additionalDirectories": [
       "c:\\Users\\nacim\\Desktop\\Dev Stuff\\projects\\manorops\\app\\api\\auth"

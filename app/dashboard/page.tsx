@@ -38,8 +38,9 @@ type UpcomingReminder = {
 
 async function getDashboardData() {
   const startOfYear = new Date(new Date().getFullYear(), 0, 1);
+  const sixMonthsAgo = new Date(new Date().getFullYear(), new Date().getMonth() - 5, 1);
 
-  const [propertyCount, openTasks, vendors, documents, assets, upcomingTasks, expiringDocs, reminders, ytdExpenses, completedTasksYTD, totalBudget, propertyList] =
+  const [propertyCount, openTasks, vendors, documents, assets, upcomingTasks, expiringDocs, reminders, ytdExpenses, completedTasksYTD, totalBudget, propertyList, rawMonthlyExpenses] =
     await Promise.all([
       prisma.property.count(),
       prisma.maintenanceTask.count({
@@ -89,12 +90,27 @@ async function getDashboardData() {
       }),
       prisma.property.aggregate({ _sum: { annualBudget: true } }),
       prisma.property.findMany({ select: { id: true, name: true }, orderBy: { name: "asc" } }),
+      prisma.expense.findMany({
+        where: { date: { gte: sixMonthsAgo } },
+        select: { amount: true, date: true },
+      }),
     ]);
 
   const ytdSpend = (ytdExpenses._sum.amount ?? 0) + (completedTasksYTD._sum.actualCost ?? 0);
   const annualBudget = totalBudget._sum.annualBudget ?? 0;
 
-  return { properties: propertyCount, openTasks, vendors, documents, assets, upcomingTasks, expiringDocs, reminders, ytdSpend, annualBudget, propertyList };
+  const monthlySpend = Array.from({ length: 6 }, (_, i) => {
+    const d = new Date(new Date().getFullYear(), new Date().getMonth() - (5 - i), 1);
+    const amount = rawMonthlyExpenses
+      .filter((e) => {
+        const ed = new Date(e.date);
+        return ed.getFullYear() === d.getFullYear() && ed.getMonth() === d.getMonth();
+      })
+      .reduce((sum, e) => sum + e.amount, 0);
+    return { label: format(d, "MMM"), amount, isCurrent: i === 5 };
+  });
+
+  return { properties: propertyCount, openTasks, vendors, documents, assets, upcomingTasks, expiringDocs, reminders, ytdSpend, annualBudget, propertyList, monthlySpend };
 }
 
 const priorityColors: Record<string, string> = {
@@ -113,6 +129,12 @@ const categoryLabel: Record<string, string> = {
   OTHER: "Other",
 };
 
+function fmtChartAmount(n: number): string {
+  if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `$${(n / 1_000).toFixed(0)}k`;
+  return `$${Math.round(n)}`;
+}
+
 function getGreeting(name: string | null | undefined) {
   const hour = new Date().getHours();
   const time = hour < 12 ? "morning" : hour < 17 ? "afternoon" : "evening";
@@ -122,7 +144,7 @@ function getGreeting(name: string | null | undefined) {
 
 export default async function DashboardPage() {
   const [session, data] = await Promise.all([auth(), getDashboardData()]);
-  const { properties, openTasks, vendors, documents, assets, upcomingTasks, expiringDocs, reminders, ytdSpend, annualBudget, propertyList } = data;
+  const { properties, openTasks, vendors, documents, assets, upcomingTasks, expiringDocs, reminders, ytdSpend, annualBudget, propertyList, monthlySpend } = data;
 
   const budgetPct = annualBudget > 0 ? Math.min((ytdSpend / annualBudget) * 100, 100) : null;
 
@@ -197,6 +219,51 @@ export default async function DashboardPage() {
           </div>
         </div>
       </Link>
+
+      {/* Monthly Spend Chart */}
+      <Card className="border-stone-200">
+        <CardHeader className="pb-2 pt-5 px-5">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-sm font-semibold text-stone-900">Monthly Spend</CardTitle>
+            <span className="text-xs text-stone-400">Last 6 months · expenses</span>
+          </div>
+        </CardHeader>
+        <CardContent className="px-5 pb-5">
+          {monthlySpend.every((m) => m.amount === 0) ? (
+            <div className="flex items-end gap-2">
+              {monthlySpend.map((m, i) => (
+                <div key={i} className="flex-1 flex flex-col items-center gap-1.5">
+                  <div className="w-full rounded-t-sm bg-stone-100" style={{ height: "4px" }} />
+                  <span className="text-[10px] text-stone-400">{m.label}</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex items-end gap-2">
+              {(() => {
+                const maxAmount = Math.max(...monthlySpend.map((m) => m.amount), 1);
+                return monthlySpend.map((m, i) => {
+                  const barHeight = Math.max(Math.round((m.amount / maxAmount) * 88), m.amount > 0 ? 6 : 2);
+                  return (
+                    <div key={i} className="flex-1 flex flex-col items-center gap-1.5">
+                      <span className="text-[10px] font-medium text-stone-500 leading-none" style={{ visibility: m.amount > 0 ? "visible" : "hidden" }}>
+                        {fmtChartAmount(m.amount)}
+                      </span>
+                      <div
+                        className={`w-full rounded-t-sm transition-colors ${m.isCurrent ? "bg-stone-800" : "bg-stone-200"}`}
+                        style={{ height: `${barHeight}px` }}
+                      />
+                      <span className={`text-[10px] leading-none ${m.isCurrent ? "text-stone-700 font-medium" : "text-stone-400"}`}>
+                        {m.label}
+                      </span>
+                    </div>
+                  );
+                });
+              })()}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       <div className="grid lg:grid-cols-2 gap-5">
         {/* Upcoming maintenance */}

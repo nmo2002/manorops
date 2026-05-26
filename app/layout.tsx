@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Providers } from "./providers";
 import "./globals.css";
@@ -16,6 +16,12 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "ManorOps — Private Estate Operations",
   description: "The private operations platform for exceptional homes and estates.",
+};
+
+export const viewport: Viewport = {
+  themeColor: "#1c1917",
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({
