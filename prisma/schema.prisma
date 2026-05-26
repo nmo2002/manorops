@@ -193,11 +193,18 @@ model Asset {
   updatedAt          DateTime   @updatedAt
 }
 
+model WaitlistEntry {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
+}
+
 model Reminder {
   id          String    @id @default(cuid())
   message     String
   remindAt    DateTime
   isDismissed Boolean   @default(false)
+  emailSent   Boolean   @default(false)
   taskId      String?
   task        MaintenanceTask? @relation(fields: [taskId], references: [id], onDelete: Cascade)
   documentId  String?

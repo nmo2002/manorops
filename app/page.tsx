@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { Building2, ArrowRight, Shield, Lock, BarChart3, CheckCircle, Wrench, FileText, Users, Package, TrendingUp, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { auth } from "@/auth";
+import { WaitlistForm } from "@/app/waitlist-form";
 
 export default async function LandingPage() {
   const session = await auth();
@@ -356,20 +357,21 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      {/* CTA */}
+      {/* Waitlist CTA */}
       <section className="max-w-7xl mx-auto px-6 py-24 text-center">
         <h2 className="text-3xl font-semibold text-neutral-900 tracking-tight mb-4">
           Ready to run your estate like a professional operation?
         </h2>
         <p className="text-neutral-500 mb-8 max-w-md mx-auto">
-          Set up in minutes. No training required. Built for estate managers who don't have time to waste.
+          Join the waitlist and be among the first estate managers to get access.
         </p>
-        <Link href="/login">
-          <Button className="bg-neutral-900 text-white hover:bg-neutral-800 h-12 px-10 text-sm font-medium">
-            Get Started Free
-            <ArrowRight className="w-4 h-4 ml-2" />
-          </Button>
-        </Link>
+        <WaitlistForm />
+        <p className="text-xs text-neutral-400 mt-4">
+          Already have an account?{" "}
+          <Link href="/login" className="text-neutral-600 underline underline-offset-2 hover:text-neutral-900">
+            Sign in
+          </Link>
+        </p>
       </section>
 
       {/* Footer */}
