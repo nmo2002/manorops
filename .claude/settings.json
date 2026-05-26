@@ -1,0 +1,32 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsx -e ' *)",
+      "Bash(node -e ' *)",
+      "Bash(npx tsx --env-file=.env -e ' *)",
+      "Bash(npx tsx *)",
+      "Bash(npm run *)",
+      "Bash(echo \"Dev server PID: $!\")",
+      "Bash(sleep 5 && cat /tmp/manorops-dev.log)",
+      "Read(//tmp/**)",
+      "Bash(taskkill /PID 825 /F)",
+      "Bash(taskkill /PID 20204 /F)",
+      "Bash(echo \"New dev server PID: $!\")",
+      "PowerShell(taskkill /PID 20204 /F)",
+      "PowerShell(Get-NetTCPConnection -LocalPort 3000 -ErrorAction SilentlyContinue)",
+      "Bash(kill 845)",
+      "Bash(echo \"PID: $!\")",
+      "Bash(npm install *)",
+      "Bash(mkdir -p \"c:\\\\Users\\\\nacim\\\\Desktop\\\\Dev Stuff\\\\projects\\\\manorops\\\\app\\\\api\\\\auth\\\\[...nextauth]\")",
+      "Bash(kill 1964)",
+      "Bash(pkill -f \"next dev\")",
+      "PowerShell(taskkill /PID 25124 /F)",
+      "PowerShell(netstat -ano)",
+      "Bash(node -e \"const p = require\\('./node_modules/date-fns/package.json'\\); console.log\\(p.version\\)\")",
+      "Bash(node -e \"require\\('@vercel/blob'\\)\")"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\nacim\\Desktop\\Dev Stuff\\projects\\manorops\\app\\api\\auth"
+    ]
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(pg_isready)",
+      "Bash(psql --version)",
+      "PowerShell(Get-Command psql -ErrorAction SilentlyContinue)",
+      "PowerShell(Get-Command pg_isready -ErrorAction SilentlyContinue)",
+      "Bash(taskkill /F /IM node.exe)",
+      "PowerShell(Stop-Process -Name node -Force -ErrorAction SilentlyContinue)",
+      "Bash(npx prisma *)",
+      "Bash(mkdir \"c:\\\\Users\\\\nacim\\\\Desktop\\\\Dev Stuff\\\\projects\\\\manorops\\\\app\\\\dashboard\\\\properties\\\\[id]\")",
+      "Bash(mkdir \"c:\\\\Users\\\\nacim\\\\Desktop\\\\Dev Stuff\\\\projects\\\\manorops\\\\app\\\\dashboard\\\\properties\\\\[id]\\\\manual\")",
+      "Bash(npx tsc *)"
+    ]
+  }
+}

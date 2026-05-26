@@ -1,0 +1,277 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?
+  role          UserRole  @default(OWNER)
+  orgId         String?
+  org           Org?      @relation(fields: [orgId], references: [id])
+  accounts      Account[]
+  sessions      Session[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Org {
+  id         String     @id @default(cuid())
+  name       String
+  users      User[]
+  properties Property[]
+  vendors    Vendor[]
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+}
+
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+}
+
+model Session {
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@id([identifier, token])
+}
+
+model Property {
+  id              String           @id @default(cuid())
+  name            String
+  address         String
+  city            String?
+  state           String?
+  country         String?
+  propertyType    PropertyType     @default(PRIMARY)
+  imageUrl        String?
+  notes           String?
+  annualBudget    Float?
+  orgId           String?
+  org             Org?             @relation(fields: [orgId], references: [id])
+  vendors         Vendor[]
+  tasks           MaintenanceTask[]
+  documents       Document[]
+  assets          Asset[]
+  expenses        Expense[]
+  reminders       Reminder[]
+  operatingManual OperatingManual?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+}
+
+model OperatingManual {
+  id                String   @id @default(cuid())
+  propertyId        String   @unique
+  property          Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  accessInstructions String?
+  utilityShutoffs   String?
+  wifiNetwork       String?
+  wifiPassword      String?
+  securityNotes     String?
+  alarmCode         String?
+  emergencyContacts String?
+  trashSchedule     String?
+  houseRules        String?
+  generalNotes      String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model Vendor {
+  id          String            @id @default(cuid())
+  companyName String
+  serviceType String
+  contactName String?
+  phone       String?
+  email       String?
+  notes       String?
+  status      VendorStatus      @default(ACTIVE)
+  propertyId  String?
+  property    Property?         @relation(fields: [propertyId], references: [id])
+  orgId       String?
+  org         Org?              @relation(fields: [orgId], references: [id])
+  tasks       MaintenanceTask[]
+  expenses    Expense[]
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+}
+
+model Expense {
+  id          String          @id @default(cuid())
+  description String
+  amount      Float
+  category    ExpenseCategory @default(OTHER)
+  date        DateTime        @default(now())
+  notes       String?
+  propertyId  String?
+  property    Property?       @relation(fields: [propertyId], references: [id])
+  vendorId    String?
+  vendor      Vendor?         @relation(fields: [vendorId], references: [id])
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+}
+
+model MaintenanceTask {
+  id                  String              @id @default(cuid())
+  title               String
+  notes               String?
+  dueDate             DateTime?
+  priority            Priority            @default(MEDIUM)
+  status              TaskStatus          @default(PENDING)
+  isRecurring         Boolean             @default(false)
+  recurrenceFrequency RecurrenceFrequency?
+  recurrenceInterval  Int?
+  nextDueDate         DateTime?
+  lastCompletedAt     DateTime?
+  propertyId          String?
+  property            Property?           @relation(fields: [propertyId], references: [id])
+  estimatedCost       Float?
+  actualCost          Float?
+  vendorId            String?
+  vendor              Vendor?             @relation(fields: [vendorId], references: [id])
+  reminders           Reminder[]
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+}
+
+model Document {
+  id             String           @id @default(cuid())
+  title          String
+  category       DocumentCategory @default(OTHER)
+  expirationDate DateTime?
+  notes          String?
+  fileUrl        String?
+  propertyId     String?
+  property       Property?        @relation(fields: [propertyId], references: [id])
+  reminders      Reminder[]
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+}
+
+model Asset {
+  id                 String     @id @default(cuid())
+  itemName           String
+  room               String?
+  estimatedValue     Float?
+  purchaseDate       DateTime?
+  warrantyExpiration DateTime?
+  notes              String?
+  propertyId         String?
+  property           Property?  @relation(fields: [propertyId], references: [id])
+  reminders          Reminder[]
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
+}
+
+model Reminder {
+  id          String    @id @default(cuid())
+  message     String
+  remindAt    DateTime
+  isDismissed Boolean   @default(false)
+  taskId      String?
+  task        MaintenanceTask? @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  documentId  String?
+  document    Document?        @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  assetId     String?
+  asset       Asset?           @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  propertyId  String?
+  property    Property?        @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+enum UserRole {
+  OWNER
+  MANAGER
+  STAFF
+}
+
+enum PropertyType {
+  PRIMARY
+  SECONDARY
+  VACATION
+  INVESTMENT
+  OTHER
+}
+
+enum VendorStatus {
+  ACTIVE
+  INACTIVE
+  PENDING
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum TaskStatus {
+  PENDING
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum DocumentCategory {
+  INSURANCE
+  WARRANTY
+  CONTRACT
+  DEED
+  TAX
+  OTHER
+}
+
+enum ExpenseCategory {
+  MAINTENANCE
+  UTILITIES
+  INSURANCE
+  STAFFING
+  LANDSCAPING
+  SECURITY
+  SUPPLIES
+  HOA_FEES
+  TAXES
+  OTHER
+}
+
+enum RecurrenceFrequency {
+  WEEKLY
+  MONTHLY
+  QUARTERLY
+  SEMIANNUAL
+  ANNUAL
+  CUSTOM
+}
