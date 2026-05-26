@@ -23,7 +23,8 @@
       "PowerShell(taskkill /PID 25124 /F)",
       "PowerShell(netstat -ano)",
       "Bash(node -e \"const p = require\\('./node_modules/date-fns/package.json'\\); console.log\\(p.version\\)\")",
-      "Bash(node -e \"require\\('@vercel/blob'\\)\")"
+      "Bash(node -e \"require\\('@vercel/blob'\\)\")",
+      "Bash(git commit -m ' *)"
     ],
     "additionalDirectories": [
       "c:\\Users\\nacim\\Desktop\\Dev Stuff\\projects\\manorops\\app\\api\\auth"
